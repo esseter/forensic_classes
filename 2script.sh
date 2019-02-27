@@ -19,6 +19,9 @@ echo "        | |   ) |                        ";
 echo "        | (__/  )                        ";
 echo "        (______/                         ";
 echo "                                         ";
+echo '------------------------------------------------- '
+echo ''
+
 
 IFS="\n"
 while read line ; do
@@ -34,9 +37,9 @@ while read line ; do
 	# not updated yet
 	# output in the following format: "%M:%S"
 
-	if [ ! -z $timestamp ] # remove the error for the first line where time_end wasn't stated so the test return an error
+	if [ ! -z $timestamp ] && [ ! -z $time_end ] # remove the error for the first line where time_end wasn't stated so the test return an error
 	then
-		if (("$timestamp_sec" < "$time_end_sec"))
+		if (("$timestamp_sec" < "$time_end_sec")) 
 		then 
 			echo '------------------------------------------------- '
 			echo ''	
@@ -44,7 +47,7 @@ while read line ; do
 			overlap=$(date -d @$overlap_sec +'%M:%S')
 			echo "OVERLAP with previous connection: " $overlap
 
-		elif [ ! -z $timestamp ] && (("$timestamp_sec" > "$time_end_sec"))
+		elif [ ! -z $timestamp ] && (("$timestamp_sec" > "$time_end_sec")) # fix to remove the empty airgap output
 		then
 			echo '------------------------------------------------- '
 			echo ''
@@ -57,14 +60,15 @@ while read line ; do
 
 		fi
 	fi
-
 	# get the number of seconds elapsed during the duration of the connection
 	time_dur_seconds=$(echo $time_dur | awk -F':' '{print $1 * 60 * 60 + $2 * 60 + $3}')
 	
 	# We convert start date in seconds, add the duration time and convert back in correct date format for time_end
-	
-	time_end_sec=$(expr $timestamp_sec + $time_dur_seconds)
-	time_end=$(date -d @$time_end_sec +'%d/%m/%Y %H:%M:%S')
+	if [ ! -z $timestamp ]
+	then
+		time_end_sec=$(expr $timestamp_sec + $time_dur_seconds)
+		time_end=$(date -d @$time_end_sec +'%d/%m/%Y %H:%M:%S')
+	fi
 
 	#2nd Output of our script within the terminal
 	if [ ! -z $timestamp ] 
